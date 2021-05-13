@@ -25,17 +25,15 @@ class HomeTest(BaseCase):
         self.click('#btn-login')
         self.wait(3)
 
-    def hover_and_execute_action(self, action: str):
-        print('action', action)
-        self.click(f'a[href="/{blog_name}/"]')
-        self.hover_on_element('article[id^=post]')
-        self.click(f'a[href$="{action}"]')
-        self.wait(3)
-
     @pytest.mark.order(1)
     def test_write_post(self):
         # login
         self.login()
+
+        # make sure we publish to blog
+        self.click('a[id="publish-to"]')
+        self.click(f'li[id=blog-{blog_name}]')
+        self.wait(3)
 
         # create a text entry
         self.update_text(
@@ -59,7 +57,10 @@ class HomeTest(BaseCase):
         self.wait(3)
 
         # go to blog
-        self.hover_and_execute_action(action='edit')
+        self.click(f'a[href="/{blog_name}/"]')
+        self.hover_on_element('article[id^=post]')
+        self.click(f'a[href$="edit"]')
+        self.wait(3)
         self.update_text(
             selector=entry_element,
             text=f'An edited entry using SeleniumBase at { str(datetime.now()) }'
@@ -81,11 +82,14 @@ class HomeTest(BaseCase):
         self.wait(3)
 
         # go to blog
-        self.hover_and_execute_action(action='delete')
-        self.wait(10)
+        self.click(f'a[href="/{blog_name}/"]')
+        self.wait(3)
+
+        # find element
+        self.execute_script("document.querySelector('article[id^=post] a.delete').click()")
+        self.wait(2)
+        self.accept_alert()
 
         # confirm deletion
-        self.wait_for_and_switch_to_alert()
-        self.accept_alert()
         self.wait(3)
         print('Deleting Entry - Done')
